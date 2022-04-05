@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+require "async"
+require "async/http/endpoint"
+require "async/io"
+require "async/io/protocol/line"
+require "async/websocket/client"
+require "tty-prompt"
+
+
+Async do
+  puts "gets"
+  input = Async::IO::Protocol::Line.new(
+  	Async::IO::Stream.new(
+  		Async::IO::Generic.new($stdin)
+  	)
+  )
+
+  while line = input.read_line
+    puts "stdin #{line}"
+  end
+end
+
+# puts "gets"
+# while input = gets
+#   puts "stdin #{input}"
+# end

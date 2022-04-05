@@ -1,0 +1,104 @@
+#!/usr/bin/env ruby
+
+require "async"
+require "async/http/endpoint"
+require "async/io"
+require "async/io/protocol/line"
+require "async/websocket/client"
+
+require "./boot"
+
+Async do
+  terminal_output_queue = ::Async::Queue.new
+  websocket_output_queue = ::Async::Queue.new
+
+  Async do |task|
+    endpoint = Async::HTTP::Endpoint.parse(ENV["WEBSOCKET_URL"])
+
+    Async::WebSocket::Client.connect(endpoint) do |connection|
+      Async do |task|
+        # block on terminal queue
+        while message = terminal_output_queue.dequeue
+          connection.write(message.to_json)
+          connection.flush
+        end
+      end
+
+      # block on websocket connection
+      while message = connection.read
+        websocket_output_queue.enqueue(message)
+      end
+    end
+  end
+
+  Async do |task|
+    # block on websocket queue
+    while message = websocket_output_queue.dequeue
+      # puts("websocket message #{message}")
+
+      # parse websocket message into terminal string
+      struct_parse = ::Client::Parse.new(
+        message: Oj.load(message),
+      ).call
+
+      puts(struct_parse.output)
+
+      if struct_parse.exit == 1
+        # exit command
+        exit(0)
+      end
+    end
+  end
+
+  Async do
+    stdin = Async::IO::Protocol::Line.new(
+    	Async::IO::Stream.new(
+    		Async::IO::Generic.new($stdin)
+    	)
+    )
+
+    # create default user_id
+    user_id = ULID.generate
+
+    ::Client::Chat::Hello.new(
+      queue: terminal_output_queue,
+      user_id: user_id,
+    ).call
+
+    while line = stdin.read_line
+      # parse input
+      if line[/^\//]
+        # supported commands
+        if line[/^\/exit$/]
+          ::Client::Chat::Exit.new(
+            queue: terminal_output_queue,
+            user_id: user_id,
+          ).call
+        elsif line[/^\/name\s/]
+          tuples = line.split(" ")
+
+          # todo: validate username
+          new_id = tuples[1]
+
+          ::Client::Chat::Identify.new(
+            queue: terminal_output_queue,
+            user_id: new_id,
+            old_id: user_id,
+          ).call
+
+          # update user_id
+          user_id = new_id
+        else
+          puts "! invalid cmd"
+        end
+      else
+        # default is message
+        ::Client::Chat::Message.new(
+          queue: terminal_output_queue,
+          user_id: user_id,
+          data: line,
+        ).call
+      end
+    end
+  end
+end
