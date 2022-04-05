@@ -1,3 +1,7 @@
 #!/usr/bin/env ruby
 
-system("bundle exec falcon serve --bind http://localhost:7070 --count 1 --config config.ws.ru")
+require "dotenv"
+
+Dotenv.load(".env.development")
+
+system("bundle exec falcon serve --bind #{ENV["WEBSOCKET_URL"]} --count 1 --config config.ws.ru")

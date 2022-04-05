@@ -39,6 +39,7 @@ Async do
       # parse websocket message into terminal string
       struct_parse = ::Client::Parse.new(
         message: Oj.load(message),
+        request_ids: ::Client::Request.ids,
       ).call
 
       puts(struct_parse.output)
@@ -68,11 +69,16 @@ Async do
     while line = stdin.read_line
       # parse input
       if line[/^\//]
+        ulid = ULID.generate
+
         # supported commands
         if line[/^\/exit$/]
+          ::Client::Request.add_id(id: ulid)
+
           ::Client::Chat::Exit.new(
             queue: terminal_output_queue,
             user_id: user_id,
+            rid: ulid,
           ).call
         elsif line[/^\/help/]
           puts "help cmds: /name, /exit, everything else is a public message"
@@ -91,12 +97,13 @@ Async do
             queue: terminal_output_queue,
             user_id: new_id,
             old_id: user_id,
+            rid: ulid,
           ).call
 
           # update user_id
           user_id = new_id
         elsif line[/^\/private\s/]
-          # parse line into set of user ids and data
+          # wip: parse line into set of user ids and data
           match = line.match(/(\/private\s)([^\s]*)\s(.*)/)
 
           if match.blank?
@@ -114,7 +121,7 @@ Async do
         ::Client::Chat::Message.new(
           data: line,
           queue: terminal_output_queue,
-          rid: ULID.generate,
+          rid: ulid,
           user_id: user_id,
         ).call
       end

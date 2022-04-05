@@ -3,10 +3,12 @@
 module Client
   class Parse
 
-    def initialize(message:)
+    def initialize(message:, request_ids:)
       @message = message
+      @request_ids = request_ids
 
       @message_name = @message["message"]
+      @message_rid = @message["rid"]
 
       @struct = Struct.new(:code, :output, :exit, :errors)
     end
@@ -18,7 +20,11 @@ module Client
         struct.output = "> #{_user_name} joined the chat"
       elsif @message_name[/exit/]
         struct.output = "> #{_user_name} left the chat"
-        struct.exit = 1
+
+        # mark the exit flag iff this client sent exit
+        if @request_ids.include?(@message_rid)
+          struct.exit = 1
+        end
       elsif @message_name[/message/]
         struct.output = "#{_user_name}: #{@message["data"]}"
       end
