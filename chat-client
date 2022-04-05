@@ -81,7 +81,9 @@ Async do
             rid: ulid,
           ).call
         elsif line[/^\/help/]
-          puts "help cmds: /name, /exit, /who, everything else is a public message"
+          puts "help cmds: /me, /name, /exit, /who, everything else is a public message"
+        elsif line[/^\/me/]
+          puts "me: #{user_id}"
         elsif line[/^\/name\s/]
           tuples = line.split(" ")
 
