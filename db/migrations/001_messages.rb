@@ -13,7 +13,6 @@ Sequel.migration do
       String :message_id, null: false
       Integer :room_id, null: false
       String :user_id, null: false
-      String :user_ids
       column :timestamp, DateTime # timestamp
     end
   end

@@ -2,12 +2,11 @@
 
 module Services
   module Rooms
-    class Factory
+    class Default
 
       DEFAULT = "public"
 
       def initialize
-
         @struct = Struct.new(:code, :room_id, :errors)
       end
 

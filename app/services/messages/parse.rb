@@ -109,10 +109,12 @@ module Services
       def _parse_message
         # save message
 
+        struct_room = Services::Rooms::Default.new.call
+
         Message.create(
           data: @message["data"],
           message_id: @message["rid"],
-          room_id: Room.first.id,
+          room_id: struct_room.room_id,
           timestamp: Time.now.utc,
           user_id: @message["user_id"],
         )

@@ -74,11 +74,18 @@ Async do
             queue: terminal_output_queue,
             user_id: user_id,
           ).call
+        elsif line[/^\/help/]
+          puts "help cmds: /name, /exit, everything else is a public message"
         elsif line[/^\/name\s/]
           tuples = line.split(" ")
 
-          # todo: validate username
+          # validate username
           new_id = tuples[1]
+
+          if tuples.size > 2
+            puts "! invalid name"
+            next
+          end
 
           ::Client::Chat::Identify.new(
             queue: terminal_output_queue,
@@ -88,15 +95,27 @@ Async do
 
           # update user_id
           user_id = new_id
+        elsif line[/^\/private\s/]
+          # parse line into set of user ids and data
+          match = line.match(/(\/private\s)([^\s]*)\s(.*)/)
+
+          if match.blank?
+            puts "! invalid syntax"
+            next
+          end
+
+          to_ids = match[2]
+          data = match[3]
         else
           puts "! invalid cmd"
         end
       else
-        # default is message
+        # default is send a public message
         ::Client::Chat::Message.new(
-          queue: terminal_output_queue,
-          user_id: user_id,
           data: line,
+          queue: terminal_output_queue,
+          rid: ULID.generate,
+          user_id: user_id,
         ).call
       end
     end

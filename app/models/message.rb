@@ -13,9 +13,6 @@ class Message < ::Sequel::Model
   # scopes
 
   dataset_module do
-    def from_eq(s)
-      where(Sequel.lit("data->'message'->>'from' = ?", s))
-    end
   end
 
   def data

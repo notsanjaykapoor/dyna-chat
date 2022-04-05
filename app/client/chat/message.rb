@@ -18,10 +18,10 @@ module Client
         struct = @struct.new(0, [])
 
         @queue.enqueue({
-          "message": MSG,
-          "user_id": @user_id,
           "data": @data,
+          "message": MSG,
           "rid": @rid,
+          "user_id": @user_id,
         })
 
         struct

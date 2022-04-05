@@ -8,7 +8,7 @@ require "./boot"
 subject = "Websocket"
 
 # create default room
-Services::Rooms::Factory.new.call
+Services::Rooms::Default.new.call
 
 # initialize rack app
 
