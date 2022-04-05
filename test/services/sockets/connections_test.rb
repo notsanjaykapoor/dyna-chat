@@ -43,8 +43,8 @@ describe "socket_connections" do
       user_connections = ::Services::Sockets::Connections.user_get(user_id: "user-1")
       users_count = ::Services::Sockets::Connections.users_count
 
-      assert_equal(user_connections, [])
-      assert_equal(users_count, 1)
+      assert_equal([], user_connections, [])
+      assert_equal(0, users_count)
 
       ::Services::Sockets::Connections.remove(
         connection: :connection_1
@@ -52,7 +52,7 @@ describe "socket_connections" do
 
       users_count = ::Services::Sockets::Connections.users_count
 
-      assert_equal(users_count, 0)
+      assert_equal(0, users_count)
     end
   end
 

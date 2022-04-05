@@ -81,7 +81,7 @@ Async do
             rid: ulid,
           ).call
         elsif line[/^\/help/]
-          puts "help cmds: /name, /exit, everything else is a public message"
+          puts "help cmds: /name, /exit, /who, everything else is a public message"
         elsif line[/^\/name\s/]
           tuples = line.split(" ")
 
@@ -113,6 +113,12 @@ Async do
 
           to_ids = match[2]
           data = match[3]
+        elsif line[/^\/who/]
+          ::Client::Chat::Who.new(
+            queue: terminal_output_queue,
+            user_id: user_id,
+            rid: ulid,
+          ).call
         else
           puts "! invalid cmd"
         end

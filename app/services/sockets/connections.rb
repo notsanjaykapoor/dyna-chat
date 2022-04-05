@@ -21,7 +21,7 @@ module Services
       def self.remove(connection:)
         @@connections.delete(connection)
 
-        # cleanup users mapping
+        # update users mapping
 
         @@users.each_pair do |user_id, connections|
           if connections.include?(connection)
@@ -29,12 +29,7 @@ module Services
           end
         end
 
-        @@users.each_pair do |user_id, connections|
-          if connections.size.zero?
-            # garbage collect
-            @@users.delete(user_id)
-          end
-        end
+        _users_gc
       end
 
       def self.user_add(connection:, user_id:)
@@ -55,6 +50,8 @@ module Services
 
         @@users[user_id] = connection_list - [connection]
 
+        _users_gc
+
         0
       end
 
@@ -68,6 +65,15 @@ module Services
 
       def self.users_count
         @@users.keys.size
+      end
+
+      def self._users_gc
+        @@users.each_pair do |user_id, connections|
+          if connections.size.zero?
+            # garbage collect
+            @@users.delete(user_id)
+          end
+        end
       end
 
     end

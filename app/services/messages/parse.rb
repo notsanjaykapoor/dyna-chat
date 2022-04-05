@@ -27,6 +27,8 @@ module Services
             struct.code = _parse_identify
           elsif @message_name[/message/]
             struct.code = _parse_message
+          elsif @message_name[/who/]
+            struct.code = _parse_who
           end
         rescue => e
           Console.logger.error(self, e)
@@ -124,6 +126,21 @@ module Services
         ::Services::Sockets::Broadcast.new(
           message: @message,
           user_ids: ::Services::Sockets::Connections.user_ids,
+        ).call
+      end
+
+      def _parse_who
+        message = {
+          "message" => @message_name,
+          "user_id" => @message["user_id"],
+          "user_ids" => ::Services::Sockets::Connections.user_ids,
+        }
+
+        # send message to requesting user
+
+        ::Services::Sockets::Send.new(
+          message: message,
+          connection: @connection,
         ).call
       end
 

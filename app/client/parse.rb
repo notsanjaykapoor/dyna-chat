@@ -27,6 +27,8 @@ module Client
         end
       elsif @message_name[/message/]
         struct.output = "#{_user_name}: #{@message["data"]}"
+      elsif @message_name[/who/]
+        struct.output = "#{@message_name}: #{@message["user_ids"].join(",")}"
       end
 
       struct
